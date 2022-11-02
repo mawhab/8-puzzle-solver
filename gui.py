@@ -280,7 +280,8 @@ def display_seq(state):
     states.reverse()
     print_states(states)
     l = len(states)
-    s = 15 / l
+    s = int((15 / l)*1000000000)
+    print(s)
     for i in range(l):
         check_events()
         pygame.draw.rect(screen, screen_color, (120, 450, 100,30))
@@ -288,7 +289,9 @@ def display_seq(state):
         moves_count = font.render(str(i), True, text_color)
         screen.blit(moves_count, pygame.Rect(120, 450, 100,30))
         pygame.display.flip()
-        time.sleep(s)
+        t_old = time.time_ns()
+        while (time.time_ns() - t_old) <= s:
+            check_events()
     
 
 def solve():
