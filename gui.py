@@ -48,8 +48,8 @@ play_lw = 420
 sq = (play_lw/3) - 2
 
 def check_events():
-    global buttons
-    if algorithm == -1:
+    global buttons, solvable
+    if algorithm == -1 or not solvable:
         buttons.sprites()[4].block()
     else:
         buttons.sprites()[4].unblock()
@@ -82,40 +82,35 @@ def check_events():
     pygame.display.flip()
 
 
-def element_in_list(arr, elem):
-    for i in range(len(arr)):
-        if arr[i].get_state_vals()==elem:
-            return i
-    return -1
-
 def BFS(initial_state):
     global solving
     frontier = deque()
-    #frontier_states = deque()
     frontier_states = {}
     explored = {}
 
     frontier.append(initial_state)
     frontier_states[tuple(map(tuple,initial_state.get_state_vals()))] = True
 
-    # while frontier and solving:
-    while frontier:
-        # check_events()
+    while frontier and solving:
+    # while frontier:
+        check_events()
 
         state = frontier.popleft()
         frontier_states[tuple(map(tuple,state.get_state_vals()))] = False
         explored[tuple(map(tuple,state.get_state_vals()))] = True
 
-        if len(explored) % 1000 == 0:
-            print(f"Explored %s nodes" % (len(explored)))
+        # if len(explored) % 10000 == 0:
+        #     print(f"Explored %s nodes" % (len(explored)))
 
-        if len(frontier) % 1000 == 0:
-            print(f"%s nodes in frontier" % (len(frontier)))
+        # if len(frontier) % 10000 == 0:
+        #     print(f"%s nodes in frontier" % (len(frontier)))
 
         # print("Visiting: ", end='')
         # print(state.get_state_vals())
 
         if state.is_target_state():
+            print(state.get_state_vals())
+            print(f"Explored %s nodes" % (len(explored)))
             return state
         
         for neighbor in state.get_neighbors():
@@ -127,35 +122,36 @@ def BFS(initial_state):
                 front = explored[tuple(map(tuple,neighbor.get_state_vals()))]
             except KeyError:
                 front = False
-            if exp or front:
-                continue
-            else:
+            if not (exp or front):
                 frontier.append(neighbor)
-                #frontier_states.append(neighbor.get_state_vals())
                 frontier_states[tuple(map(tuple,state.get_state_vals()))] = True
-
+    print("None")
+    print(f"Explored %s nodes" % (len(explored)))
     return None
 
 def DFS(initial_state):
     global solving
     frontier = deque()
-    frontier_states = deque()
+    frontier_states = {}
     explored = {}
 
     frontier.append(initial_state)
-    frontier_states.append(initial_state.get_state_vals())
+    frontier_states[tuple(map(tuple,initial_state.get_state_vals()))] = True
 
     while frontier and solving:
+    # while frontier:
         check_events()
 
         state = frontier.pop()
-        frontier_states.pop()
+        frontier_states[tuple(map(tuple,state.get_state_vals()))] = False
         explored[tuple(map(tuple,state.get_state_vals()))] = True
 
         # print("Visiting: ", end='')
         # print(state.get_state_vals())
 
         if state.is_target_state():
+            print(state.get_state_vals())
+            print(f"Explored %s nodes" % (len(explored)))
             return state
         
         for neighbor in state.get_neighbors():
@@ -163,12 +159,18 @@ def DFS(initial_state):
                 exp = explored[tuple(map(tuple,neighbor.get_state_vals()))]
             except KeyError:
                 exp = False
-            if exp or neighbor.get_state_vals() in frontier_states:
-                continue
-            else:
-                frontier.append(neighbor)
-                frontier_states.append(neighbor.get_state_vals())
 
+            try:
+                front = explored[tuple(map(tuple,neighbor.get_state_vals()))]
+            except KeyError:
+                front = False
+
+            if not (exp or front):
+                frontier.append(neighbor)
+                frontier_states[tuple(map(tuple,state.get_state_vals()))] = True
+
+    print("None")
+    print(f"Explored %s nodes" % (len(explored)))
     return None
 
 def A_star(initial_state):
@@ -181,9 +183,9 @@ def A_star(initial_state):
     # frontier_states[tuple(map(tuple,initial_state.get_state_vals()))] = True
     
 
-    # while frontier and solving:
-    while frontier:
-        #check_events()
+    while frontier and solving:
+    # while frontier:
+        check_events()
 
         state = heapq.heappop(frontier)
         try:
@@ -193,16 +195,18 @@ def A_star(initial_state):
         if exp:
             continue
         explored[tuple(map(tuple,state.get_state_vals()))] = True
-        if len(explored) % 1000 == 0:
-            print(f"Explored %s nodes" % (len(explored)))
+        # if len(explored) % 1000 == 0:
+        #     print(f"Explored %s nodes" % (len(explored)))
 
-        if len(frontier) % 1000 == 0:
-            print(f"%s nodes in frontier" % (len(frontier)))
+        # if len(frontier) % 1000 == 0:
+        #     print(f"%s nodes in frontier" % (len(frontier)))
 
         # print("Visiting: ", end='')
         # print(state.get_state_vals())
 
         if state.is_target_state():
+            print(state.get_state_vals())
+            print(f"Explored %s nodes" % (len(explored)))
             return state
         
         for neighbor in state.get_neighbors():
@@ -211,23 +215,10 @@ def A_star(initial_state):
             except KeyError:
                 exp = False
 
-            # try:
-            #     front = frontier_states[tuple(map(tuple,neighbor.get_state_vals()))]
-            # except KeyError:
-            #     front = False
-
-            if exp:
-                continue
-                # if i>-1 and neighbor.g < frontier[i].g:
-                #     #del frontier[i]
-                #     frontier[i].g, frontier[i].previous_state = neighbor.g, neighbor.previous_state
-                #     frontier[i].initial = neighbor.initial
-
-                #     heapq.heapify(frontier)
-                #     #heapq.heappush(frontier, (neighbor.get_cost(), neighbor))
-            else:
+            if not exp:
                 heapq.heappush(frontier, neighbor)
-
+    print("None")
+    print(f"Explored %s nodes" % (len(explored)))
     return None
 
 
@@ -241,10 +232,18 @@ def random_state():
     return state.tolist()
 
 def random_cb():
-    global state
+    global state, z, solvable
     state = random_state()
-    draw_state(state)
     print(state)
+    draw_state(state)
+    z = (-1,-1)
+    for i in range(3):
+        for j in range(3):
+            if state[i][j] == 0:
+                z = (i,j)
+    solvable = isSolvable(state)
+    if not solvable:
+        print("No solution")
 
 def bfs_cb():
     global algorithm
@@ -280,20 +279,25 @@ def display_seq(state):
 
     states.reverse()
     print_states(states)
-    for i in range(len(states)):
+    l = len(states)
+    s = 15 / l
+    for i in range(l):
         check_events()
         pygame.draw.rect(screen, screen_color, (120, 450, 100,30))
         draw_state(states[i])
         moves_count = font.render(str(i), True, text_color)
         screen.blit(moves_count, pygame.Rect(120, 450, 100,30))
         pygame.display.flip()
-        time.sleep(1)
+        time.sleep(s)
     
 
 def solve():
-    global algorithm, state, solving, screen, screen_color
+    global algorithm, state, solving, screen, screen_color, z
+    # if not isSolvable(state):
+    #     print("No solution")
+    #     return
     seq = None
-    state_obj = State(state)
+    state_obj = State(state, z)
     solving = True
     unblock_all()
     pygame.draw.rect(screen, screen_color, (500, 450, 100,30))
@@ -319,9 +323,28 @@ def solve():
 def stop():
     global solving
     solving = False
-    
 
+# A utility function to count
+# inversions in given array 'arr[]'
+def getInvCount(arr):
+	inv_count = 0
+	for i in range(0, 9):
+		for j in range(i + 1, 9):
+			if arr[i]!= 0 and arr[j] != 0 and arr[i] > arr[j]:
+				inv_count += 1
+	return inv_count
 
+	
+# This function returns true
+# if given 8 puzzle is solvable.
+def isSolvable(puzzle) :
+
+	# Count inversions in given 8 puzzle
+	inv_count = getInvCount([j for sub in puzzle for j in sub])
+
+	# return true if inversion count is even.
+	return (inv_count % 2 == 0)
+	
 def draw_state(state=None):
     global sq, block_color,blank_color,font,text_color,screen
     for i in range(3):
@@ -380,19 +403,35 @@ def setup():
     pygame.display.flip()
 
 state = random_state()
+solvable = isSolvable(state)
+z = (-1,-1)
+for i in range(3):
+    for j in range(3):
+        if state[i][j] == 0:
+            z = (i,j)
+# state = [[8, 5, 2], [1, 4, 0], [6, 7, 3]]
+# state = [[4, 5, 7], [8, 6, 1], [2, 0, 3]]
 # state = [[3,6,4],
 #          [2,0,7],
 #          [1,8,5]]
-# setup()
+setup()
 # state = [[8,6,1],
 #          [0,7,3],
 #          [4,2,5]]
-
-state_obj = State(state)
-cProfile.run('A_star(state_obj)')
+# print(state)
+# if not isSolvable(state):
+#     print("No solution")
+# else:
+#     z = (-1,-1)
+#     for i in range(3):
+#         for j in range(3):
+#             if state[i][j] == 0:
+#                 z = (i,j)
+#     state_obj = State(state, z)
+#     cProfile.run('BFS(state_obj)')
 # print(BFS(state_obj))
 
-# while True:
-#     check_events()
+while True:
+    check_events()
 
 
