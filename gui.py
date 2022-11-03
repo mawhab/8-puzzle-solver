@@ -119,7 +119,7 @@ def BFS(initial_state):
             except KeyError:
                 exp = False
             try:
-                front = explored[tuple(map(tuple,neighbor.get_state_vals()))]
+                front = frontier_states[tuple(map(tuple,neighbor.get_state_vals()))]
             except KeyError:
                 front = False
             if not (exp or front):
@@ -161,7 +161,7 @@ def DFS(initial_state):
                 exp = False
 
             try:
-                front = explored[tuple(map(tuple,neighbor.get_state_vals()))]
+                front = frontier_states[tuple(map(tuple,neighbor.get_state_vals()))]
             except KeyError:
                 front = False
 
@@ -281,7 +281,6 @@ def display_seq(state):
     print_states(states)
     l = len(states)
     s = int((15 / l)*1000000000)
-    print(s)
     for i in range(l):
         check_events()
         pygame.draw.rect(screen, screen_color, (120, 450, 100,30))
@@ -405,31 +404,31 @@ def setup():
 
     pygame.display.flip()
 
-state = random_state()
+# state = random_state()
+# state = [[8, 5, 2], [1, 4, 0], [6, 7, 3]]
+state = [[1, 2, 5], [3, 4, 0], [6, 7, 8]]
+state = [[3, 6, 7],
+         [1, 4, 2],
+         [0, 8, 5]]
 solvable = isSolvable(state)
 z = (-1,-1)
 for i in range(3):
     for j in range(3):
         if state[i][j] == 0:
             z = (i,j)
-# state = [[8, 5, 2], [1, 4, 0], [6, 7, 3]]
 # state = [[4, 5, 7], [8, 6, 1], [2, 0, 3]]
 # state = [[3,6,4],
 #          [2,0,7],
 #          [1,8,5]]
+
 setup()
 # state = [[8,6,1],
 #          [0,7,3],
 #          [4,2,5]]
 # print(state)
-# if not isSolvable(state):
+# if not solvable:
 #     print("No solution")
 # else:
-#     z = (-1,-1)
-#     for i in range(3):
-#         for j in range(3):
-#             if state[i][j] == 0:
-#                 z = (i,j)
 #     state_obj = State(state, z)
 #     cProfile.run('BFS(state_obj)')
 # print(BFS(state_obj))
