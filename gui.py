@@ -93,7 +93,7 @@ def BFS(initial_state):
 
     while frontier and solving:
     # while frontier:
-        check_events()
+        # check_events()
 
         state = frontier.popleft()
         frontier_states[tuple(map(tuple,state.get_state_vals()))] = False
@@ -140,7 +140,7 @@ def DFS(initial_state):
 
     while frontier and solving:
     # while frontier:
-        check_events()
+        # check_events()
 
         state = frontier.pop()
         frontier_states[tuple(map(tuple,state.get_state_vals()))] = False
@@ -185,7 +185,7 @@ def A_star(initial_state):
 
     while frontier and solving:
     # while frontier:
-        check_events()
+        # check_events()
 
         state = heapq.heappop(frontier)
         try:
@@ -280,6 +280,8 @@ def display_seq(state):
     states.reverse()
     print_states(states)
     l = len(states)
+    if l == 0:
+        return
     s = int((15 / l)*1000000000)
     for i in range(l):
         check_events()
@@ -406,10 +408,15 @@ def setup():
 
 # state = random_state()
 # state = [[8, 5, 2], [1, 4, 0], [6, 7, 3]]
-state = [[1, 2, 5], [3, 4, 0], [6, 7, 8]]
-state = [[3, 6, 7],
-         [1, 4, 2],
-         [0, 8, 5]]
+# state = [[1, 2, 5], [3, 4, 0], [6, 7, 8]]
+state = [[5, 0, 2], [6, 8, 7], [3, 1, 4]]
+# state = [[3, 6, 7],
+#          [1, 4, 2],
+#          [0, 8, 5]]
+
+# state = [[1, 2, 5],
+#          [3, 4, 0],
+#          [6, 7, 8]]
 solvable = isSolvable(state)
 z = (-1,-1)
 for i in range(3):
