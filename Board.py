@@ -13,8 +13,9 @@ class State:
 
         self.state_vals = init_state # initial state of board given by user
 
-        self.previous_state = previous_state
+        self.previous_state = previous_state # setting parent
 
+        # setting node attributes
         self.initial = False
         self.g = 0
         self.h_eucledian = -1
@@ -28,17 +29,12 @@ class State:
         else:
             self.g = self.previous_state.get_g()+1
 
-        # self.state_coords = [[-1,-1], [-1,-1], [-1,-1], [-1,-1], [-1,-1], [-1,-1], [-1,-1], [-1,-1], [-1,-1]]
-
-        # for i in range(3):
-        #     for j in range(3):
-        #         self.state_coords[self.state_vals[i][j]] = [i,j]
 
     # returns the target position of a given value
     def get_targetxy(val):
         return State.TARGET_VALS[val]
 
-    # returns manhattan huerestic value of a given value in its current state
+    # returns manhattan heurestic value of a given value in its current state
     def get_manhattan(self, val=(-1,-1)):
         if val==(-1,-1):
             h = 0
@@ -116,9 +112,6 @@ class State:
             neighbors.append(State(new_state, (empty_block_row,empty_block_column-1), self))
 
         return neighbors
-
-    # def get_state_coords(self):
-    #     return self.state_coords
 
     def get_state_vals(self):
         return self.state_vals

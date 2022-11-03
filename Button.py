@@ -1,5 +1,6 @@
 import pygame
 
+# button object
 class Button(pygame.sprite.Sprite):
     def __init__(self, screen, position, text, size, colors):
         super().__init__()

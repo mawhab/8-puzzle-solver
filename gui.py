@@ -9,7 +9,7 @@ from collections import deque
 import heapq
 import cProfile
 
-
+# gui settings
 padding = 20
 btn_x = 460
 btn_w = 100
@@ -30,7 +30,9 @@ btn_blocked_color = (128,128,128)
 
 btn_colors = [btn_text_color, btn_color, btn_hover_color, btn_blocked_color]
 
-algorithm = -1
+play_lw = 420
+
+sq = (play_lw/3) - 2
 
 bfs_y = (30+btn_h+spc_long)
 dfs_y = (bfs_y+btn_h+spc_short)
@@ -40,13 +42,12 @@ sol_y = (ast_y+btn_h+spc_long)
 buttons = pygame.sprite.Group()
 
 
+# selected algorithm (-1 indicates none selected)
+algorithm = -1
 
 
 
-play_lw = 420
-
-sq = (play_lw/3) - 2
-
+# function to check gui events
 def check_events():
     global buttons, solvable
     if algorithm == -1 or not solvable:
@@ -83,21 +84,24 @@ def check_events():
 
 
 def BFS(initial_state):
-    global solving
-    frontier = deque()
-    frontier_states = {}
-    explored = {}
+    global solving # global variable that indicates wether user wants to solve or stop
+    frontier = deque() # main queue
+    frontier_states = {} # dictionary to keep track of nodes in frontier faster
+    explored = {} # dictionary to keep track of visited nodes
 
-    frontier.append(initial_state)
-    frontier_states[tuple(map(tuple,initial_state.get_state_vals()))] = True
+    frontier.append(initial_state) # adding initial state
+    frontier_states[tuple(map(tuple,initial_state.get_state_vals()))] = True # adding initial state to dict
 
-    while frontier and solving:
+    # while there are states not visited in frontier
+    while frontier and solving: # while frontier is not empty and user hasn't requested stopping of solution
     # while frontier:
         # check_events()
 
-        state = frontier.popleft()
-        frontier_states[tuple(map(tuple,state.get_state_vals()))] = False
-        explored[tuple(map(tuple,state.get_state_vals()))] = True
+        state = frontier.popleft() # get next state in queue
+        frontier_states[tuple(map(tuple,state.get_state_vals()))] = False # remove state from dictionary
+        explored[tuple(map(tuple,state.get_state_vals()))] = True # add state to explored
+
+        # prints used for debuging and watching output
 
         # if len(explored) % 10000 == 0:
         #     print(f"Explored %s nodes" % (len(explored)))
@@ -108,93 +112,113 @@ def BFS(initial_state):
         # print("Visiting: ", end='')
         # print(state.get_state_vals())
 
+        # check if goal state reached
         if state.is_target_state():
             print(state.get_state_vals())
             print(f"Explored %s nodes" % (len(explored)))
             return state
         
+        # for each neighbor generated
         for neighbor in state.get_neighbors():
+            # try to access element in dictionary if KeyError is reached then element is not found in dictionary
             try:
                 exp = explored[tuple(map(tuple,neighbor.get_state_vals()))]
             except KeyError:
                 exp = False
+
+            # try to access element in dictionary if KeyError is reached then element is not found in dictionary
             try:
                 front = frontier_states[tuple(map(tuple,neighbor.get_state_vals()))]
             except KeyError:
                 front = False
+
+            # if neighbor isn't in frontier or explored nodes add it to queue
             if not (exp or front):
                 frontier.append(neighbor)
                 frontier_states[tuple(map(tuple,state.get_state_vals()))] = True
+
+    # if we reach this state then either no nodes found or user requested to stop solving
     print("None")
     print(f"Explored %s nodes" % (len(explored)))
     return None
 
 def DFS(initial_state):
-    global solving
-    frontier = deque()
-    frontier_states = {}
-    explored = {}
+    global solving # global variable that indicates wether user wants to solve or stop
+    frontier = deque() # main stack
+    frontier_states = {} # dictionary to keep track of nodes in frontier faster
+    explored = {} # dictionary to keep track of visited nodes
 
-    frontier.append(initial_state)
-    frontier_states[tuple(map(tuple,initial_state.get_state_vals()))] = True
+    frontier.append(initial_state) # adding initial state
+    frontier_states[tuple(map(tuple,initial_state.get_state_vals()))] = True # adding initial state to dict
 
-    while frontier and solving:
+    while frontier and solving: # while frontier is not empty and user hasn't requested stopping of solution
     # while frontier:
         # check_events()
 
-        state = frontier.pop()
-        frontier_states[tuple(map(tuple,state.get_state_vals()))] = False
-        explored[tuple(map(tuple,state.get_state_vals()))] = True
+        state = frontier.pop() # get next element in stack
+        frontier_states[tuple(map(tuple,state.get_state_vals()))] = False # remove element from dict
+        explored[tuple(map(tuple,state.get_state_vals()))] = True # add element to visted
 
+        # print used for debuging and watching solution as it runs (it slows down excution)
         # print("Visiting: ", end='')
         # print(state.get_state_vals())
 
+
+        # check if goal state reached
         if state.is_target_state():
             print(state.get_state_vals())
             print(f"Explored %s nodes" % (len(explored)))
             return state
         
+        # for each neighbor generated
         for neighbor in state.get_neighbors():
+            # try to access element in dictionary if KeyError is reached then element is not found in dictionary
             try:
                 exp = explored[tuple(map(tuple,neighbor.get_state_vals()))]
             except KeyError:
                 exp = False
-
+            # try to access element in dictionary if KeyError is reached then element is not found in dictionary
             try:
                 front = frontier_states[tuple(map(tuple,neighbor.get_state_vals()))]
             except KeyError:
                 front = False
 
+            # if neighbor is not in frontier or in explored at it to stack
             if not (exp or front):
                 frontier.append(neighbor)
                 frontier_states[tuple(map(tuple,state.get_state_vals()))] = True
 
+    # if we reach this state then either no nodes found or user requested to stop solving
     print("None")
     print(f"Explored %s nodes" % (len(explored)))
     return None
 
 def A_star(initial_state):
-    global solving
-    frontier = []
+    global solving # global variable that indicates wether user wants to solve or stop
+    frontier = [] # main heap
     # frontier_states = {}
-    explored = {}
+    explored = {} # dictionary to keep track of visited nodes
 
-    heapq.heappush(frontier, initial_state)
+    heapq.heappush(frontier, initial_state) # pushing initial node to heap
     # frontier_states[tuple(map(tuple,initial_state.get_state_vals()))] = True
     
 
-    while frontier and solving:
+    while frontier and solving: # while frontier is not empty and user hasn't requested stopping of solution
     # while frontier:
         # check_events()
 
-        state = heapq.heappop(frontier)
+        state = heapq.heappop(frontier) # get next element in priority queue
+
+        # check if element has already been visited because in this implementation we allow the same state to be in frontier mut
         try:
             exp = explored[tuple(map(tuple,state.get_state_vals()))]
         except KeyError:
             exp = False
         if exp:
             continue
-        explored[tuple(map(tuple,state.get_state_vals()))] = True
+        explored[tuple(map(tuple,state.get_state_vals()))] = True # add element to visted
+
+        # prints used for debugging and  viewing solution live
         # if len(explored) % 1000 == 0:
         #     print(f"Explored %s nodes" % (len(explored)))
 
@@ -204,33 +228,39 @@ def A_star(initial_state):
         # print("Visiting: ", end='')
         # print(state.get_state_vals())
 
+        # chek if this is the goal state
         if state.is_target_state():
             print(state.get_state_vals())
             print(f"Explored %s nodes" % (len(explored)))
             return state
         
+        # for each neighbor check if the neighbor has been explored
         for neighbor in state.get_neighbors():
             try:
                 exp = explored[tuple(map(tuple,neighbor.get_state_vals()))]
             except KeyError:
                 exp = False
-
+            # if neighbor hasn't been explored add it to frontier
             if not exp:
                 heapq.heappush(frontier, neighbor)
+
+    # if we reach this state then either no nodes found or user requested to stop solving
     print("None")
     print(f"Explored %s nodes" % (len(explored)))
     return None
 
-
+# undim all buttons
 def unblock_all():
     global buttons
     for btn in buttons:
         btn.unblock()
 
+# get random 3x3 list with non repeating elements
 def random_state():
     state = np.random.choice(9,(3,3),replace=False)
     return state.tolist()
 
+# call back for randomise button
 def random_cb():
     global state, z, solvable
     state = random_state()
@@ -245,30 +275,35 @@ def random_cb():
     if not solvable:
         print("No solution")
 
+# call back for bfs selector button
 def bfs_cb():
     global algorithm
     algorithm = 1
     unblock_all()
     buttons.sprites()[1].block()
 
+# call back for dfs selector button
 def dfs_cb():
     global algorithm
     algorithm = 2
     unblock_all()
     buttons.sprites()[2].block()
 
+# call back for A* selector button
 def ast_cb():
     global algorithm
     algorithm = 3
     unblock_all()
     buttons.sprites()[3].block()
 
+# function to print each states from state list
 def print_states(states):
     for state in states:
         for row in state:
             print(row)
         print()
 
+# function to display state sequence from initial state to given state in gui given a node
 def display_seq(state):
     global font
     states = []
@@ -282,7 +317,7 @@ def display_seq(state):
     l = len(states)
     if l == 0:
         return
-    s = int((15 / l)*1000000000)
+    s = ((15 / l)*1000000000) # time between each state. Total time should always be 15 s
     for i in range(l):
         check_events()
         pygame.draw.rect(screen, screen_color, (120, 450, 100,30))
@@ -294,18 +329,18 @@ def display_seq(state):
         while (time.time_ns() - t_old) <= s:
             check_events()
     
-
+# callback function for solve button
 def solve():
-    global algorithm, state, solving, screen, screen_color, z
-    # if not isSolvable(state):
-    #     print("No solution")
-    #     return
-    seq = None
-    state_obj = State(state, z)
-    solving = True
-    unblock_all()
-    pygame.draw.rect(screen, screen_color, (500, 450, 100,30))
-    t_start = time.time()
+    global algorithm, state, solving, screen, screen_color, z # get global vars
+
+    seq = None # final solution sequence
+    state_obj = State(state, z) # state object from given state
+    solving = True # flag to indicate solution is running
+    unblock_all() # unblock all buttons
+    pygame.draw.rect(screen, screen_color, (500, 450, 100,30)) 
+    t_start = time.time() # start time
+
+    # selecting algorithm to run
     if algorithm == 1:
         algorithm = -1
         seq = BFS(state_obj)
@@ -316,14 +351,18 @@ def solve():
         algorithm = -1
         seq = A_star(state_obj)
 
-    solving = False
+    solving = False # finished solving
 
-    t = font.render('%.2f s' % (time.time() - t_start), True, text_color)
+    t = font.render('%.2f s' % (time.time() - t_start), True, text_color) # render sol time
+    # if seq is available 
     if seq:
         screen.blit(t, pygame.Rect(500, 450, 100,30))
         pygame.display.flip()
+    
+    # display found sequence
     display_seq(seq)
 
+# callback function for stop button
 def stop():
     global solving
     solving = False
@@ -349,6 +388,7 @@ def isSolvable(puzzle) :
 	# return true if inversion count is even.
 	return (inv_count % 2 == 0)
 	
+# draw a given state on the screen
 def draw_state(state=None):
     global sq, block_color,blank_color,font,text_color,screen
     for i in range(3):
@@ -363,8 +403,9 @@ def draw_state(state=None):
             txt_Rect = txt.get_rect(center=(22+(i*(sq+1)+sq/2), 22+(j*(sq+1))+sq/2))
             screen.blit(txt, txt_Rect)
 
-pygame.init()
+pygame.init() # init pygame
 
+# setup gui and screen
 def setup():
     global screen,btn_h,btn_h,spc_long,spc_short,play_lw,screen_color,text_color,bfs_y,dfs_y,ast_y,sol_y
     global buttons,btn_colors,font,state_easy,state
@@ -406,10 +447,10 @@ def setup():
 
     pygame.display.flip()
 
-# state = random_state()
+state = random_state()
 # state = [[8, 5, 2], [1, 4, 0], [6, 7, 3]]
 # state = [[1, 2, 5], [3, 4, 0], [6, 7, 8]]
-state = [[5, 0, 2], [6, 8, 7], [3, 1, 4]]
+# state = [[5, 0, 2], [6, 8, 7], [3, 1, 4]]
 # state = [[3, 6, 7],
 #          [1, 4, 2],
 #          [0, 8, 5]]
